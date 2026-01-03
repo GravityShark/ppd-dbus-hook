@@ -1,4 +1,4 @@
-module ppd-dbus-hook
+module github.com/GravityShark/ppd-dbus-hook
 
 go 1.25.5
 
