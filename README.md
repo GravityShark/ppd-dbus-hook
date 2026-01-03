@@ -1,0 +1,33 @@
+Simple go program that subscribes to dbus to monitor for specifically only power-profiles-daemon
+changes and then runs a command from that
+
+## why?
+
+cause when i try to use dbus-monitor or busctl, it goes back to eavesdropping
+which according to shitgippity is wrong and recommended to just create a new
+program, which it also gracefully provided (it just gave the dbus part i added
+the argument part, if that even accounts for anything)
+
+## installation
+
+lowkey idk, its just a go program figure that out yourself lowkey
+
+## examples
+
+you could like make it send notifications (i use [notify-desktop](https://github.com/nowrep/notify-desktop))
+
+```shell
+ppd-dbus-hook \
+      "notify-desktop 'Power-saver mode enabled'" \
+      "notify-desktop 'Balanced mode enabled'" \
+      "notify-desktop 'Performance enabled'"
+```
+
+i personally want it to enable or disable [noctalia performance](https://github.com/noctalia-dev/noctalia-shell)
+
+```shell
+ppd-dbus-hook \
+      "noctalia-shell ipc call powerProfile enableNoctaliaPerformance" \
+      "noctalia-shell ipc call powerProfile disableNoctaliaPerformance" \
+      "noctalia-shell ipc call powerProfile enableNoctaliaPerformance"
+```

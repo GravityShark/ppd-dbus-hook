@@ -1,4 +1,4 @@
-module yuh
+module ppd-dbus-hook
 
 go 1.25.5
 
