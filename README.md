@@ -18,16 +18,30 @@ you could like make it send notifications (i use [notify-desktop](https://github
 
 ```shell
 ppd-dbus-hook \
-      "notify-desktop 'Power-saver mode enabled'" \
-      "notify-desktop 'Balanced mode enabled'" \
-      "notify-desktop 'Performance enabled'"
+    "notify-desktop 'Power-saver mode enabled'" \
+    "notify-desktop 'Balanced mode enabled'" \
+    "notify-desktop 'Performance enabled'"
 ```
 
 i personally want it to enable or disable [noctalia performance](https://github.com/noctalia-dev/noctalia-shell)
 
 ```shell
 ppd-dbus-hook \
-      "noctalia-shell ipc call powerProfile enableNoctaliaPerformance" \
-      "noctalia-shell ipc call powerProfile disableNoctaliaPerformance" \
-      "noctalia-shell ipc call powerProfile enableNoctaliaPerformance"
+    "noctalia-shell ipc call powerProfile enableNoctaliaPerformance" \
+    "noctalia-shell ipc call powerProfile disableNoctaliaPerformance" \
+    "noctalia-shell ipc call powerProfile enableNoctaliaPerformance"
+```
+
+i also use it for my msi-ec shift mode
+
+```shell
+
+sudo ppd-dbus-hook \
+    "sh -c 'echo eco > /sys/devices/platform/msi-ec/shift_mode'" \
+    "sh -c 'echo comfort > /sys/devices/platform/msi-ec/shift_mode'" \
+    "sh -c 'echo turbo > /sys/devices/platform/msi-ec/shift_mode'"
+```
+
+```
+
 ```

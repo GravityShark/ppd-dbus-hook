@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/google/shlex"
 )
 
 func main() {
@@ -18,12 +18,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	powersaverScript := strings.Fields(os.Args[1])
-	balancedScript := strings.Fields(os.Args[2])
-	performanceScript := strings.Fields(os.Args[3])
-	// log.Println(powerSaverScript)
-	// log.Println(balancedScript)
-	// log.Println(performanceScript)
+	powersaverScript, err := shlex.Split(os.Args[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+	balancedScript, err := shlex.Split(os.Args[2])
+	if err != nil {
+		log.Fatal(err)
+	}
+	performanceScript, err := shlex.Split(os.Args[3])
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	conn, err := dbus.SystemBus()
 	if err != nil {
@@ -75,16 +81,19 @@ func main() {
 		// Run scripts per profile
 		switch profile {
 		case "power-saver":
+			fmt.Println("Running:", powersaverScript)
 			err := exec.Command(powersaverScript[0], powersaverScript[1:]...).Run()
 			if err != nil {
 				log.Fatal(err)
 			}
 		case "balanced":
+			fmt.Println("Running:", balancedScript)
 			err := exec.Command(balancedScript[0], balancedScript[1:]...).Run()
 			if err != nil {
 				log.Fatal(err)
 			}
 		case "performance":
+			fmt.Println("Running:", performanceScript)
 			err := exec.Command(performanceScript[0], performanceScript[1:]...).Run()
 			if err != nil {
 				log.Fatal(err)
