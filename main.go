@@ -36,12 +36,26 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Grab the current power profile and apply it immediately
+	current_property, err := conn.Object("net.hadess.PowerProfiles", "/net/hadess/PowerProfiles").
+		GetProperty("net.hadess.PowerProfiles.ActiveProfile")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	scriptsPerProfile(
+		current_property.Value().(string),
+		powersaverScript,
+		balancedScript,
+		performanceScript,
+	)
+
+	// Watch for changes
 	rule := "type='signal'," +
 		"interface='org.freedesktop.DBus.Properties'," +
 		"member='PropertiesChanged'," +
 		"path='/net/hadess/PowerProfiles'," +
 		"arg0='net.hadess.PowerProfiles'"
-
 	call := conn.BusObject().Call(
 		"org.freedesktop.DBus.AddMatch",
 		0,
@@ -76,28 +90,36 @@ func main() {
 			continue
 		}
 
-		fmt.Println("ActiveProfile:", profile)
-
 		// Run scripts per profile
-		switch profile {
-		case "power-saver":
-			fmt.Println("Running:", powersaverScript)
-			err := exec.Command(powersaverScript[0], powersaverScript[1:]...).Run()
-			if err != nil {
-				log.Fatal(err)
-			}
-		case "balanced":
-			fmt.Println("Running:", balancedScript)
-			err := exec.Command(balancedScript[0], balancedScript[1:]...).Run()
-			if err != nil {
-				log.Fatal(err)
-			}
-		case "performance":
-			fmt.Println("Running:", performanceScript)
-			err := exec.Command(performanceScript[0], performanceScript[1:]...).Run()
-			if err != nil {
-				log.Fatal(err)
-			}
+		scriptsPerProfile(profile, powersaverScript, balancedScript, performanceScript)
+	}
+}
+
+func scriptsPerProfile(
+	profile string,
+	powersaverScript []string,
+	balancedScript []string,
+	performanceScript []string,
+) {
+	fmt.Println("ActiveProfile:", profile)
+	switch profile {
+	case "power-saver":
+		fmt.Println("Running:", powersaverScript)
+		err := exec.Command(powersaverScript[0], powersaverScript[1:]...).Run()
+		if err != nil {
+			log.Fatal(err)
+		}
+	case "balanced":
+		fmt.Println("Running:", balancedScript)
+		err := exec.Command(balancedScript[0], balancedScript[1:]...).Run()
+		if err != nil {
+			log.Fatal(err)
+		}
+	case "performance":
+		fmt.Println("Running:", performanceScript)
+		err := exec.Command(performanceScript[0], performanceScript[1:]...).Run()
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 }
