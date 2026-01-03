@@ -12,6 +12,27 @@ the argument part, if that even accounts for anything)
 
 lowkey idk, its just a go program figure that out yourself lowkey
 
+but i do have a flake
+
+```nix
+
+{
+    inputs = {
+        ppd-dbus-hook = {
+          url = "github:GravityShark/ppd-dbus-hook";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+    }
+}
+```
+
+now add it to your config in whichever way you like. personally i like inherting
+inputs to nixos and home-manager and doing this
+
+```nix
+${inputs.ppd-dbus-hook.packages.${pkgs.stdenv.hostPlatform.system}.default}
+```
+
 ## examples
 
 you could like make it send notifications (i use [notify-desktop](https://github.com/nowrep/notify-desktop))
@@ -35,13 +56,10 @@ ppd-dbus-hook \
 i also use it for my msi-ec shift mode
 
 ```shell
-
 sudo ppd-dbus-hook \
     "sh -c 'echo eco > /sys/devices/platform/msi-ec/shift_mode'" \
     "sh -c 'echo comfort > /sys/devices/platform/msi-ec/shift_mode'" \
     "sh -c 'echo turbo > /sys/devices/platform/msi-ec/shift_mode'"
 ```
 
-```
-
-```
+and i just run these scripts in a systemd service
