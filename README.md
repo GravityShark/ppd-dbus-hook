@@ -27,10 +27,16 @@ but i do have a flake
 ```
 
 now add it to your config in whichever way you like. personally i like inherting
-inputs to nixos and home-manager and doing this
+inputs to nixos and home-manager and using this to refer to the package
 
 ```nix
-${inputs.ppd-dbus-hook.packages.${pkgs.stdenv.hostPlatform.system}.default}
+inputs.ppd-dbus-hook.packages.${pkgs.stdenv.hostPlatform.system}.default
+```
+
+e.g.
+
+```nix
+"${inputs.ppd-dbus-hook.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/ppd-dbus-hook"
 ```
 
 ## examples
