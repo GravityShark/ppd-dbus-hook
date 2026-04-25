@@ -1,14 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/google/shlex"
 )
+
+var out bytes.Buffer
 
 func main() {
 	if len(os.Args) != 4 {
@@ -20,29 +22,35 @@ func main() {
 
 	powersaverScript, err := shlex.Split(os.Args[1])
 	if err != nil {
-		log.Fatal(err)
+		fmt.Print(err)
+		os.Exit(1)
 	}
 	balancedScript, err := shlex.Split(os.Args[2])
 	if err != nil {
-		log.Fatal(err)
+		fmt.Print(err)
+		os.Exit(1)
 	}
 	performanceScript, err := shlex.Split(os.Args[3])
 	if err != nil {
-		log.Fatal(err)
+		fmt.Print(err)
+		os.Exit(1)
 	}
 
 	conn, err := dbus.SystemBus()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Print(err)
+		os.Exit(1)
 	}
 
 	// Grab the current power profile and apply it immediately
 	current_property, err := conn.Object("net.hadess.PowerProfiles", "/net/hadess/PowerProfiles").
 		GetProperty("net.hadess.PowerProfiles.ActiveProfile")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Print("Could not get propery net.hadess.PowerProfiles.ActiveProfile", err)
+		os.Exit(1)
 	}
 
+	// Run it once
 	scriptsPerProfile(
 		current_property.Value().(string),
 		powersaverScript,
@@ -62,7 +70,8 @@ func main() {
 		rule,
 	)
 	if call.Err != nil {
-		log.Fatal(call.Err)
+		fmt.Print("org.freedesktop.DBus.AddMatch call failed", call.Err)
+		os.Exit(1)
 	}
 
 	c := make(chan *dbus.Signal, 10)
@@ -104,22 +113,31 @@ func scriptsPerProfile(
 	fmt.Println("ActiveProfile:", profile)
 	switch profile {
 	case "power-saver":
-		fmt.Println("Running:", powersaverScript)
-		err := exec.Command(powersaverScript[0], powersaverScript[1:]...).Run()
+		fmt.Printf("Running: [%s]\n", powersaverScript)
+		powersaverCommand := exec.Command(powersaverScript[0], powersaverScript[1:]...)
+		powersaverCommand.Stdout = &out
+		err := powersaverCommand.Run()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("PowerSaverScript Run Error: [%s] %s", err, out.String())
+			os.Exit(1)
 		}
 	case "balanced":
-		fmt.Println("Running:", balancedScript)
-		err := exec.Command(balancedScript[0], balancedScript[1:]...).Run()
+		fmt.Printf("Running: [%s]\n", balancedScript)
+		balancedCommand := exec.Command(balancedScript[0], balancedScript[1:]...)
+		balancedCommand.Stdout = &out
+		err := balancedCommand.Start()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("BalancedScript Run Error: [%s] %s", err, out.String())
+			os.Exit(1)
 		}
 	case "performance":
-		fmt.Println("Running:", performanceScript)
-		err := exec.Command(performanceScript[0], performanceScript[1:]...).Run()
+		fmt.Printf("Running: [%s]\n", performanceScript)
+		performanceCommand := exec.Command(performanceScript[0], performanceScript[1:]...)
+		performanceCommand.Stdout = &out
+		err := performanceCommand.Start()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("PerformanceScript Run Error: [%s] %s", err, out.String())
+			os.Exit(1)
 		}
 	}
 }
